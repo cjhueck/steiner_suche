@@ -92,7 +92,7 @@
   <div class="row radios">
     <strong>Suchbereich:</strong>
     <label><input type="radio" name="scope" value="title" checked> Titel</label>
-    <label><input type="radio" name="scope" value="subheading"> Abschnitte</label>
+    <label><input type="radio" name="scope" value="subheading"> Abschnitte (nur H3)</label>
     <label><input type="radio" name="scope" value="both"> Beides</label>
     <label><input type="radio" name="scope" value="fulltext"> Gesamter Text</label>
   </div>
@@ -148,15 +148,63 @@
   const prep = s => (s||"").toLowerCase().trim();
   const includesAny = (h, n) => h.indexOf(n) !== -1;
 
+  // Funktion zur Identifikation von H4-Überschriften
+  function isLikelyH4Heading(heading) {
+    const h = heading.trim();
+    
+    // Typische H4-Charakteristika (heuristische Erkennung):
+    // 1. Sehr kurze Überschriften (oft nur 1-3 Wörter)
+    const wordCount = h.split(/\s+/).length;
+    if (wordCount <= 3 && h.length <= 30) {
+      return true;
+    }
+    
+    // 2. Überschriften mit bestimmten Mustern, die typisch für H4 sind
+    const h4Patterns = [
+      /^(Frage|Antwort|Einwand|Bemerkung):/i,
+      /^(I+|[0-9]+)\.\s*$/,  // Römische/arabische Zahlen allein
+      /^[A-Z]\.\s*$/,        // Einzelne Buchstaben
+      /^(Erste|Zweite|Dritte|Vierte|Fünfte)\s+(Frage|Antwort|Bemerkung)/i,
+      /^(Der|Die|Das)\s+\w+\s+(Mensch|Geist|Seele)$/i
+    ];
+    
+    for (const pattern of h4Patterns) {
+      if (pattern.test(h)) {
+        return true;
+      }
+    }
+    
+    // 3. Sehr kurze Überschriften mit wenig Inhalt
+    if (h.length <= 15 && !/[.?!]$/.test(h)) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  // Funktion zur Filterung der Überschriften (nur H3, keine H4)
+  function filterH3Headings(headings) {
+    return headings.filter(heading => !isLikelyH4Heading(heading));
+  }
+
   function passScope(item, term, scope){
     const t = prep(term);
     if (!t) return true;
     const title = (item.title||'').toLowerCase();
-    const headings = (item.headings||[]).map(h => (h||'').toLowerCase());
+    
+    // Für Überschriften-Suche: nur H3 verwenden
+    let headings = (item.headings||[]).map(h => (h||'').toLowerCase());
+    if (scope === "subheading" || scope === "both") {
+      const originalHeadings = item.headings || [];
+      const filteredHeadings = filterH3Headings(originalHeadings);
+      headings = filteredHeadings.map(h => (h||'').toLowerCase());
+    }
+    
     const body = (item.body||'').toLowerCase();
     const inTitle = includesAny(title, t);
     const inHeadings = headings.some(h => includesAny(h, t));
     const inBody = body ? includesAny(body, t) : false;
+    
     if (scope === "title") return inTitle;
     if (scope === "subheading") return inHeadings;
     if (scope === "both") return (inTitle || inHeadings);
@@ -174,7 +222,13 @@
     
     const t1 = prep(term1);
     const t2 = prep(term2);
-    const headings = item.headings || [];
+    
+    // Für Überschriften-Suche: nur H3 verwenden
+    let headings = item.headings || [];
+    if (scope === "subheading" || scope === "both") {
+      headings = filterH3Headings(headings);
+    }
+    
     const matchedHeadings = [];
     
     for (const heading of headings) {
@@ -248,7 +302,7 @@
     // Ergebnisse formatieren wie in der lokalen Version
     const scopeLabels = {
       "title": "Titel",
-      "subheading": "Abschnitte", 
+      "subheading": "Abschnitte (nur H3)", 
       "both": "Beides",
       "fulltext": "Gesamter Text"
     };
