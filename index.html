@@ -87,7 +87,7 @@
     <input id="term1" type="text" placeholder="Stichwort 1 (z. B. Erkenntnistheorie)">
   </div>
   <div class="row">
-    <input id="term2" type="text" placeholder="Stichwort 2 (optional; UND-VerknÃ¼pfung)">
+    <input id="term2" type="text" placeholder="Stichwort 2 (optional; UND-Verknüpfung)">
   </div>
   <div class="row radios">
     <strong>Suchbereich:</strong>
@@ -104,7 +104,7 @@
   <div id="results"></div>
   <div id="frame-note" class="hint" style="display:none;">
     Hinweis: Diese Ansicht ist eingebettet (z. B. in Obsidian). 
-    Link-Ã–ffnung ist hier absichtlich deaktiviert. Bitte nutze die Suche direkt: 
+    Link-Öffnung ist hier absichtlich deaktiviert. Bitte nutze die Suche direkt: 
     <a href="https://cjhueck.github.io/steiner_suche/" target="_blank">cjhueck.github.io/steiner_suche</a>
   </div>
 </div>
@@ -126,7 +126,7 @@
     const res = await fetch("./publish-search-index.json", { cache: "no-store" });
     if (!res.ok) throw new Error("Index nicht gefunden");
     index = await res.json();
-    statusEl.textContent = "Index geladen: " + (index.items?.length || 0) + " VortrÃ¤ge";
+    statusEl.textContent = "Index geladen: " + (index.items?.length || 0) + " Vorträge";
   } catch(e) {
     resultsEl.innerHTML = '<p class="warn">Konnte <code>publish-search-index.json</code> nicht laden. Lege HTML & JSON in denselben Ordner.</p>';
     console.error(e);
@@ -140,7 +140,7 @@
   // Check for fulltext support and show warning if missing
   const sample = (index.items||[])[0] || {};
   if (typeof sample.body === "undefined") {
-    noteEl.innerHTML = '<span class="warn">Hinweis: FÃ¼r "Gesamter Text" bitte den Index mit der neuen Exporter-Version (v1.1.0) neu erzeugen.</span>';
+    noteEl.innerHTML = '<span class="warn">Hinweis: Für "Gesamter Text" bitte den Index mit der neuen Exporter-Version (v1.1.0) neu erzeugen.</span>';
   }
 
   const ensureSlash = (s) => s.endsWith('/') ? s : s + '/';
@@ -188,9 +188,9 @@
     return matchedHeadings;
   }
 
-  // VERBESSERT: GA-Nummer und Vortragsnummer aus Titel parsen (mit Suffix-UnterstÃ¼tzung)
+  // VERBESSERT: GA-Nummer und Vortragsnummer aus Titel parsen (mit Suffix-Unterstützung)
   function parseGa(title) {
-    // UnterstÃ¼tzt GA068, GA068a, GA068b, GA068c etc.
+    // Unterstützt GA068, GA068a, GA068b, GA068c etc.
     const m = /^GA\s*(\d{3}[a-z]?)\s*\(([^)]*)\)/i.exec(title);
     if (!m) return { ga: 9999, lec: 9999, gaSuffix: '' };
     
@@ -256,16 +256,16 @@
     
     // Header wie in lokaler Version
     output += '<div class="results-header">';
-    output += `<h1>Suchergebnisse â€" ${termsLabel}</h1>`;
+    output += `<h1>Suchergebnisse — ${termsLabel}</h1>`;
     output += '</div>';
     
     // Meta-Info wie in lokaler Version
     output += '<div class="results-meta">';
-    output += `Bereich: <strong>${scopeLabel}</strong> â€¢ Treffer: <strong>${matches.length}</strong>`;
+    output += `Bereich: <strong>${scopeLabel}</strong> • Treffer: <strong>${matches.length}</strong>`;
     output += '</div>';
     
     if (matches.length === 0) {
-      output += "<p>Keine passenden VortrÃ¤ge gefunden.</p>";
+      output += "<p>Keine passenden Vorträge gefunden.</p>";
     } else {
       output += '<ul class="results-list">';
       
@@ -277,7 +277,7 @@
         // Haupteintrag (Datei-Link)
         output += `<li><a class="${cls}" href="${href}"${target}>${match.item.title}</a>`;
         
-        // Ãœberschriften-Treffer (falls vorhanden)
+        // Überschriften-Treffer (falls vorhanden)
         if (match.headingHits && match.headingHits.length > 0 && scope !== "title") {
           output += '<ul class="sub-headings">';
           for (const heading of match.headingHits) {
